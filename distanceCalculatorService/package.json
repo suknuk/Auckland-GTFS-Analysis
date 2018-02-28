@@ -1,0 +1,11 @@
+{
+  "name": "distance_calculator_service",
+  "version": "1.0.0",
+  "description": "REST service to calculate the distance between lat/long points.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Raymond Lochner",
+  "license": "ISC"
+}

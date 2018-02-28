@@ -1,0 +1,11 @@
+{
+  "name": "weather_service",
+  "version": "1.0.0",
+  "description": "REST service that provides weather data for Auckland, NZ. Acts as middleman for openweathermap - this service collects data from openweathermap frequently and services the local weather data requests. This is necessary as openweathermap has a limit on get requests.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Raymond Lochner",
+  "license": "ISC"
+}
