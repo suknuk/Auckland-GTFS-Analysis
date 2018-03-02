@@ -1,5 +1,3 @@
-
-
 begin;
 
 create table weather_condition (
@@ -82,5 +80,38 @@ insert into weather_condition(weather_id,meaning) values(960,'storm');
 insert into weather_condition(weather_id,meaning) values(961,'violent storm');
 insert into weather_condition(weather_id,meaning) values(962,'hurricane');
 
-commit;
 
+create table weather_station (
+	id int, --PRIMARY KEY
+	name text, --NOT NULL
+	lat double precision, --NOT NULL
+	lon double precision, --NOT NULL
+	point_geo geometry(Point, 4326) --NOT NULL
+);
+
+
+create table weather_data (
+	timestamp int, --NOT NULL
+	weather_station_id int, --NOT NULL FOREIGN KEY REFERENCES weather_station(id)
+	temp double precision, --NOT NULL
+	pressure double precision, --NOT NULL
+	humidity int, --NOT NULL
+	wind_speed double precision, --NOT NULL
+	wind_deg int, --NOT NULL
+	clouds int, --NOT NULL
+	rain double precision DEFAULT 0, --NOT NULL
+	snow double precision DEFAULT 0, --NOT NULL
+	weather_condition_id int --NOT NULL FOREIGN KEY REFERENCES weather_condition(weather_id)
+);
+
+
+create table speed_data (
+	weather_station_id int, --NOT NULL FOREIGN KEY REFERENCES weather_station(id)
+	timestamp int, --NOT NULL
+	lat double precision, --NOT NULL
+	lon double precision, --NOT NULL
+	vehicle_type int, --NOT NULL
+	point_geo geometry(Point, 4326) --NOT NULL
+);
+
+commit;
