@@ -1,1 +1,1 @@
-console.log(process.env.openweathermap_api);
+// console.log(process.env.openweathermap_api);
