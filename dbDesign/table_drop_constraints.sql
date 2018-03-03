@@ -1,9 +1,11 @@
+drop trigger if exists speed_data_add_nearest_weather_station_trigger on speed_data;
 drop trigger if exists weather_data_uniqueness_trigger on weather_data;
 drop trigger if exists speed_data_geom_point_creation on speed_data;
 drop trigger if exists weather_station_geom_point_creation on weather_station;
 
 drop function if exists add_geom_point_from_lat_lon;
 drop function if exists check_weather_data_entry_unique;
+drop function if exists find_nearest_weather_station;
 
 
 drop index speed_data_timestamp_index;

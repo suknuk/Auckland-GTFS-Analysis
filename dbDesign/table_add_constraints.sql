@@ -61,11 +61,14 @@ create index speed_data_geom_index
 
 -- function add a geom point with lat/lon data
 create function add_geom_point_from_lat_lon()
-RETURNS trigger AS '
+RETURNS trigger AS
+$$
 BEGIN
   NEW.point_geo = ST_SetSRID(ST_MakePoint(NEW.lon, NEW.lat), 4326);
   RETURN NEW;
-END' LANGUAGE 'plpgsql';
+END;
+$$
+LANGUAGE 'plpgsql';
 
 --trigger on weather_station to create the geometry attribute
 CREATE TRIGGER weather_station_geom_point_creation
@@ -81,8 +84,12 @@ CREATE TRIGGER speed_data_geom_point_creation
 
 
 -- function to check weather_data entries for uniqueness before inserting
+-- this is useful as the operation for checking existing entries can be
+-- ignored. In case of restarting the weather_service container will also
+-- not produce duplicates or error messages
 create function check_weather_data_entry_unique()
-RETURNS trigger as '
+RETURNS trigger as 
+$$
 BEGIN
   IF NOT EXISTS 
     (SELECT * FROM weather_data wd WHERE
@@ -93,12 +100,42 @@ BEGIN
   ELSE
     RETURN NULL;
   END IF;
-END' LANGUAGE 'plpgsql';
+END;
+$$
+LANGUAGE 'plpgsql';
 
 CREATE TRIGGER weather_data_uniqueness_trigger
   BEFORE INSERT OR UPDATE ON "weather_data"
   FOR EACH ROW
   EXECUTE PROCEDURE check_weather_data_entry_unique();
+
+
+-- function to find the nearest weather_station point and take
+-- its id when inserting new speed_data
+CREATE FUNCTION find_nearest_weather_station()
+RETURNS trigger AS 
+$$
+BEGIN
+  IF EXISTS 
+    (SELECT 1 from weather_station LIMIT 1)
+  THEN
+    NEW.weather_station_id = (
+      SELECT id
+      FROM weather_station
+      ORDER BY point_geo <-> st_setsrid(st_makepoint(NEW.lon, NEW.lat), 4326)
+      LIMIT 1);
+  ELSE
+    RAISE EXCEPTION 'no existing weather_station entries';
+  END IF;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER speed_data_add_nearest_weather_station_trigger
+  BEFORE INSERT OR UPDATE ON "speed_data"
+  FOR EACH ROW
+  EXECUTE PROCEDURE find_nearest_weather_station();
+
 
 commit;
 
