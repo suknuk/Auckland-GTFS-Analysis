@@ -91,7 +91,7 @@ create table weather_station (
 
 
 create table weather_data (
-	timestamp int, --NOT NULL
+	timestamp int, --NOT NULL, PRIMARY KEY(timestamp, weather_station_id)
 	weather_station_id int, --NOT NULL FOREIGN KEY REFERENCES weather_station(id)
 	temp double precision, --NOT NULL
 	pressure double precision, --NOT NULL

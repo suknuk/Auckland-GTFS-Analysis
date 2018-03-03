@@ -14,6 +14,8 @@ create index weather_station_geom_index
 
 
 alter table weather_data
+  add constraint weather_data_time_station_unique
+    unique(timestamp, weather_station_id),
   alter column timestamp set not null,
   alter column weather_station_id set not null,
   alter column temp set not null,
@@ -32,6 +34,10 @@ alter table weather_data
     foreign key (weather_condition_id)
     references weather_condition(weather_id);
 
+-- index for timestamp
+create index weather_data_timestamp_index
+  on weather_data(timestamp);
+
 
 alter table speed_data
   alter column weather_station_id set not null,
@@ -43,6 +49,10 @@ alter table speed_data
   add constraint speed_data_weather_station_id_fk
     foreign key (weather_station_id)
     references weather_station(id);
+
+-- index for timestamp
+create index speed_data_timestamp_index
+  on speed_data(timestamp);
 
 -- spatial index on geometry
 create index speed_data_geom_index
@@ -69,4 +79,28 @@ CREATE TRIGGER speed_data_geom_point_creation
   FOR EACH ROW
   EXECUTE PROCEDURE add_geom_point_from_lat_lon();
 
+
+-- function to check weather_data entries for uniqueness before inserting
+create function check_weather_data_entry_unique()
+RETURNS trigger as '
+BEGIN
+  IF EXISTS 
+    (SELECT * FROM weather_data wd WHERE
+      new.timestamp = wd.timestamp AND 
+      new.weather_station_id = wd.weather_station_id)
+  THEN
+    RETURN new;
+  ELSE
+    RETURN NULL;
+  END IF;
+END' LANGUAGE 'plpgsql';
+
+CREATE TRIGGER weather_data_uniqueness_trigger
+  BEFORE INSERT OR UPDATE ON "weather_data"
+  FOR EACH ROW
+  EXECUTE PROCEDURE check_weather_data_entry_unique();
+
 commit;
+
+-- unix timestamp + NZ timezone for day of the week
+-- select extract(isodow from timestamp 'epoch' + (1520085600 + 46800) * interval '1 second');
