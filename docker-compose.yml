@@ -12,3 +12,22 @@ services:
       - 3001:3001
     env_file:
       - keys.env
+
+  spatial-temporal-data:
+    container_name: spatial-temporal-data
+    image: "mdillon/postgis"
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres_user
+      - POSTGRES_PASSWORD=postgres_pw
+      - POSTGRES_DB=postgres_db
+    ports:
+    - 54321:5432
+    volumes:
+      # File container for the DB
+      - ./postgres-data:/var/lib/postgresql/data
+      # DB initialization files. Postgis image has to execute 'postgis.sh' first,
+      # so we have to name our scripts 'q*'. This is because scripts are executed
+      # in alphabetic order in the docker-entrypoint-initdb.d/ folder
+      - ./dbDesign/table_creation.sql:/docker-entrypoint-initdb.d/q-init-1.sql
+      - ./dbDesign/table_add_constraints.sql:/docker-entrypoint-initdb.d/q-init-2.sql
