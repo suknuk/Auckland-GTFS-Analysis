@@ -7,11 +7,20 @@ services:
     build: ./weatherService
     command: npm start
     volumes:
-      - "./weatherService:/usr/weatherService"
+      - "./weatherService:/usr/weather_service"
     ports:
       - 3001:3001
     env_file:
       - keys.env
+
+  distance_calculator_service:
+    container_name: distance_calculator_service
+    build: ./distanceCalculatorService
+    command: npm start
+    volumes:
+      - "./distanceCalculatorService:/usr/distance_calculator_service"
+    ports:
+      - 3002:3002
 
   spatial-temporal-data:
     container_name: spatial-temporal-data
