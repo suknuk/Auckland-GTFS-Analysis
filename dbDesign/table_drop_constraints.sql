@@ -6,8 +6,10 @@ drop function if exists add_geom_point_from_lat_lon;
 drop function if exists check_weather_data_entry_unique;
 
 
-drop index speed_data_timestamp_index
+drop index speed_data_timestamp_index;
 drop index speed_data_geom_index;
+drop index weather_data_timestamp_index;
+drop index weather_station_geom_index;
 
 alter table speed_data
   alter column weather_station_id drop not null,
@@ -18,8 +20,6 @@ alter table speed_data
   alter column point_geo drop not null,
   drop constraint speed_data_weather_station_id_fk cascade;
 
-
-drop index weather_data_timestamp_index;
 
 alter table weather_data
   drop constraint weather_data_time_station_unique cascade,
@@ -37,8 +37,6 @@ alter table weather_data
   drop constraint weather_data_weather_station_id_fk,
   drop constraint weather_data_weather_condition_id_fk cascade;
 
-
-drop index weather_station_geom_index;
 
 alter table weather_station
   drop constraint weather_station_id_pk cascade,

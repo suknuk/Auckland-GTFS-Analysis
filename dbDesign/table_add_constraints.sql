@@ -84,7 +84,7 @@ CREATE TRIGGER speed_data_geom_point_creation
 create function check_weather_data_entry_unique()
 RETURNS trigger as '
 BEGIN
-  IF EXISTS 
+  IF NOT EXISTS 
     (SELECT * FROM weather_data wd WHERE
       new.timestamp = wd.timestamp AND 
       new.weather_station_id = wd.weather_station_id)
