@@ -1,19 +1,12 @@
-// console.log(process.env.openweathermap_api);
-
-// Update weather data every 5 minutes
-// provide
-
 const http = require('http');
 const db = require('./db');
 
 const openweathermapURL = `http://api.openweathermap.org/data/2.5/find?lat=-36.87&lon=174.77&cnt=5&APPID=${process.env.OPENWEATHERMAP_API}`;
 const weatherDataCollectInterval = 5 * 60 * 1000; // 5 minutes
 
-/* global weatherStationNumber */
-let weatherStationNumber = 0;
 let weatherStationArray = [];
 
-function collectWeatherData(url) {
+function collectWeatherData(url, callback) {
   http.get(url, (res) => {
     res.setEncoding('utf8');
     let body = '';
@@ -23,17 +16,114 @@ function collectWeatherData(url) {
     });
     res.on('end', () => {
       body = JSON.parse(body);
-      return body;
+      callback(body);
     });
   });
 }
 
-function getStations() {
-  // const body = collectWeatherData(openweathermapURL);
-  // weatherStationNumber = body.count;
+function insertWeatherStation(body, callback) {
+  const queryString = `
+    INSERT INTO weather_station(id,name,lat,lon)
+    VALUES($1,$2,$3,$4);`;
+  const values = [body.id, body.name, body.coord.lat, body.coord.lon];
+  db.query(queryString, values)
+    .then((res) => {
+      callback(null, res);
+    })
+    .catch((e) => {
+      /* eslint-disable no-console */
+      console.error(e.stack);
+      /* eslint-enable no-console */
+      callback(e);
+    });
 }
 
-getStations();
+function insertWeatherData(bodyValues, callback) {
+  const queryString = `
+    INSERT INTO
+    weather_data(timestamp, weather_station_id, temp, pressure, humidity,
+      wind_speed, wind_deg, clouds, rain, snow, weather_condition_id)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);`;
 
-console.log(process.env.OPENWEATHERMAP_API);
-console.log(process.env.TEST_ENV_VAL);
+  // Casting object to new body object and applying 'null' checks
+  const body = {
+    dt: bodyValues.dt,
+    id: bodyValues.id,
+    main: {
+      temp: bodyValues.main.temp,
+      pressure: bodyValues.main.pressure,
+      humidity: bodyValues.main.humidity,
+    },
+    wind: {
+      speed: bodyValues.wind.speed,
+      deg: bodyValues.wind.deg,
+    },
+    clouds: {
+      all: bodyValues.clouds.all,
+    },
+    rain: {
+      '3h': (bodyValues.rain == null ? 0 : bodyValues.rain['3h']),
+    },
+    snow: {
+      '3h': (bodyValues.snow == null ? 0 : bodyValues.snow['3h']),
+    },
+    weather: {
+      id: bodyValues.weather[0].id,
+    },
+  };
+
+  console.log(`rain and snow: ${body.rain['3h']}, ${body.snow['3h']}`);
+
+  const values = [body.dt, body.id, body.main.temp, body.main.pressure,
+    body.main.humidity, body.wind.speed, body.wind.deg, body.clouds.all,
+    body.rain['3h'], body.snow['3h'], body.weather.id];
+
+  db.query(queryString, values)
+    .then((res) => {
+      callback(null, res);
+    })
+    .catch((e) => {
+      /* eslint-disable no-console */
+      console.error(e.stack);
+      /* eslint-enable no-console */
+      callback(e);
+    });
+}
+
+// execute a first weather station insert followed by weather data
+function firstInsert(body) {
+  insertWeatherStation(body, () => {
+    insertWeatherData(body);
+  });
+}
+
+// Check every every n minutes for new weather data
+function checkNewWeatherData() {
+  setTimeout(() => {
+    collectWeatherData(openweathermapURL, (res) => {
+      // check timestamp for new data
+      if (res.list[0].dt !== weatherStationArray[0].dt) {
+        weatherStationArray = res.list;
+        for (let i = 0; i < weatherStationArray.length; i += 1) {
+          insertWeatherData(weatherStationArray[i]);
+        }
+      }
+    });
+    checkNewWeatherData();
+  }, weatherDataCollectInterval);
+}
+
+
+function startWeatherService() {
+  collectWeatherData(openweathermapURL, (res) => {
+    weatherStationArray = res.list;
+    // insert weather_station data
+    for (let i = 0; i < weatherStationArray.length; i += 1) {
+      firstInsert(weatherStationArray[i]);
+    }
+    // Start the interval loop
+    checkNewWeatherData();
+  });
+}
+
+startWeatherService();
