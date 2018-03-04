@@ -11,7 +11,11 @@ services:
     ports:
       - 3001:3001
     env_file:
-      - keys.env
+      - .env
+    environment:
+      - TEST_ENV_VAL=${OPENWEATHERMAP_API}
+    depends_on:
+      - spatial-temporal-data
 
   distance_calculator_service:
     container_name: distance_calculator_service
@@ -27,11 +31,11 @@ services:
     image: "mdillon/postgis"
     restart: always
     environment:
-      - POSTGRES_USER=postgres_user
-      - POSTGRES_PASSWORD=postgres_pw
-      - POSTGRES_DB=postgres_db
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
     ports:
-    - 54321:5432
+    - 54321:${POSTGRES_PORT}
     volumes:
       # File container for the DB
       - ./postgres-data:/var/lib/postgresql/data
