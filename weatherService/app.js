@@ -26,19 +26,19 @@ function insertWeatherStation(body, callback) {
     INSERT INTO weather_station(id,name,lat,lon)
     VALUES($1,$2,$3,$4);`;
   const values = [body.id, body.name, body.coord.lat, body.coord.lon];
+
   db.query(queryString, values)
     .then((res) => {
+      // console.log(`insert weather_station worked: ${res}`);
       callback(null, res);
     })
     .catch((e) => {
-      /* eslint-disable no-console */
-      console.error(e.stack);
-      /* eslint-enable no-console */
+      // console.error(e.stack);
       callback(e);
     });
 }
 
-function insertWeatherData(bodyValues, callback) {
+function insertWeatherData(bodyValues) {
   const queryString = `
     INSERT INTO
     weather_data(timestamp, weather_station_id, temp, pressure, humidity,
@@ -72,22 +72,19 @@ function insertWeatherData(bodyValues, callback) {
     },
   };
 
-  console.log(`rain and snow: ${body.rain['3h']}, ${body.snow['3h']}`);
-
   const values = [body.dt, body.id, body.main.temp, body.main.pressure,
     body.main.humidity, body.wind.speed, body.wind.deg, body.clouds.all,
     body.rain['3h'], body.snow['3h'], body.weather.id];
 
   db.query(queryString, values)
+  /* eslint-disable no-console */
     .then((res) => {
-      callback(null, res);
+      console.log(`insert weather_data worked: ${res}`);
     })
     .catch((e) => {
-      /* eslint-disable no-console */
       console.error(e.stack);
-      /* eslint-enable no-console */
-      callback(e);
     });
+  /* eslint-enable no-console */
 }
 
 // execute a first weather station insert followed by weather data
@@ -100,6 +97,7 @@ function firstInsert(body) {
 // Check every every n minutes for new weather data
 function checkNewWeatherData() {
   setTimeout(() => {
+    console.log('started checking for new data already!');
     collectWeatherData(openweathermapURL, (res) => {
       // check timestamp for new data
       if (res.list[0].dt !== weatherStationArray[0].dt) {
@@ -126,4 +124,5 @@ function startWeatherService() {
   });
 }
 
-startWeatherService();
+// Wait 5 seconds to let db start
+setTimeout(startWeatherService, 5000);

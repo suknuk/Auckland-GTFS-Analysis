@@ -137,6 +137,30 @@ CREATE TRIGGER speed_data_add_nearest_weather_station_trigger
   EXECUTE PROCEDURE find_nearest_weather_station();
 
 
+-- function to check for weather_station uniqueness
+-- saves checking when inserting
+create function check_weather_station_unique()
+RETURNS trigger as 
+$$
+BEGIN
+  IF NOT EXISTS 
+    (SELECT * FROM weather_station ws WHERE
+      new.id = ws.id)
+  THEN
+    RETURN new;
+  ELSE
+    RETURN NULL;
+  END IF;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER weather_station_uniqueness_trigger
+  BEFORE INSERT OR UPDATE ON "weather_station"
+  FOR EACH ROW
+  EXECUTE PROCEDURE check_weather_station_unique();
+
+
 commit;
 
 -- unix timestamp + NZ timezone for day of the week
