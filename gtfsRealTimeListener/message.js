@@ -63,7 +63,8 @@ module.exports = {
           // console.log('got occuring id');
           makeDistanceQueryCall(positions[id].latitude, positions[id].longitude, position.latitude, position.longitude, (distance) => {
             const timeDiff = timestamp - positions[id].timestamp;
-            let kmh = (distance / timeDiff) * 3.6;
+            // calculating the km/h from km/seconds * 3600
+            let kmh = (distance / timeDiff) * 3600;
             // handling special cases of kmh
             if (kmh < 0) {
               kmh -= kmh;

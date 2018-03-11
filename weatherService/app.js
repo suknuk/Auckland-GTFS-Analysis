@@ -1,7 +1,7 @@
 const http = require('http');
 const db = require('./db');
 
-const openweathermapURL = `http://api.openweathermap.org/data/2.5/find?lat=-36.87&lon=174.77&cnt=5&APPID=${process.env.OPENWEATHERMAP_API}`;
+const openweathermapURL = `http://api.openweathermap.org/data/2.5/find?lat=-36.87&lon=174.77&cnt=50&APPID=${process.env.OPENWEATHERMAP_API}`;
 const weatherDataCollectInterval = 5 * 60 * 1000; // 5 minutes
 
 let weatherStationArray = [];
