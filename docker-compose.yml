@@ -5,6 +5,7 @@ services:
   gtfs_realtime_listener:
     container_name: gtfs_realtime_listener
     build: ./gtfsRealTimeListener
+    command: npm start
     volumes:
       - "./gtfsRealTimeListener:/usr/gtfs_realtime_listener"
     env_file:
@@ -12,6 +13,7 @@ services:
     ports:
       - 3003:3003
     depends_on:
+      - distance_calculator_service
       - spatial-temporal-data
 
   weather_service:
