@@ -2,6 +2,18 @@ version: '3'
 
 services:
 
+  gtfs_realtime_listener:
+    container_name: gtfs_realtime_listener
+    build: ./gtfsRealTimeListener
+    volumes:
+      - "./gtfsRealTimeListener:/usr/gtfs_realtime_listener"
+    env_file:
+      - .env
+    ports:
+      - 3003:3003
+    depends_on:
+      - spatial-temporal-data
+
   weather_service:
     container_name: weather_service
     build: ./weatherService
