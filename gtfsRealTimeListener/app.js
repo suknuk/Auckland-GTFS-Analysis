@@ -40,4 +40,7 @@ subscription.on('rtm/subscription/data', (pdu) => {
   });
 });
 
-client.start();
+setTimeout(() => {
+  console.log('Starting Satori GTFS listener');
+  client.start();
+}, 5000);

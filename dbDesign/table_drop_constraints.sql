@@ -20,6 +20,7 @@ alter table speed_data
   alter column timestamp drop not null,
   alter column lat drop not null,
   alter column lon drop not null,
+  alter column speed drop not null,
   alter column vehicle_type drop not null,
   alter column point_geo drop not null,
   drop constraint speed_data_weather_station_id_fk cascade;

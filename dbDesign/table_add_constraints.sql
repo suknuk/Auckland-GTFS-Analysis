@@ -44,6 +44,7 @@ alter table speed_data
   alter column timestamp set not null,
   alter column lat set not null,
   alter column lon set not null,
+  alter column speed set not null,
   alter column vehicle_type set not null,
   alter column point_geo set not null,
   add constraint speed_data_weather_station_id_fk
@@ -124,6 +125,7 @@ BEGIN
       FROM weather_station
       ORDER BY point_geo <-> st_setsrid(st_makepoint(NEW.lon, NEW.lat), 4326)
       LIMIT 1);
+    RETURN NEW;
   ELSE
     RAISE EXCEPTION 'no existing weather_station entries';
   END IF;

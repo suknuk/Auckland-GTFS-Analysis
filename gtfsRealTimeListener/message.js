@@ -26,6 +26,22 @@ function makeDistanceQueryCall(lat1, lon1, lat2, lon2, callback) {
   });
 }
 
+function insertSpeedPoint(lat, lon, speed, timestamp, vehicleType) {
+  const queryString = `
+    INSERT INTO speed_data(timestamp, lat, lon, speed, vehicle_type)
+    VALUES($1,$2,$3,$4,$5);`;
+
+  const values = [timestamp, lat, lon, speed, vehicleType];
+
+  db.query(queryString, values)
+    .then((res) => {
+      // console.log('insert speed data worked: ' + res);
+    })
+    .catch((e) => {
+      console.error(`error inserting speed_data: ${e.stack}`);
+    });
+}
+
 module.exports = {
   processGTFS(msg) {
     try {
@@ -46,8 +62,6 @@ module.exports = {
         } else {
           // console.log('got occuring id');
           makeDistanceQueryCall(positions[id].latitude, positions[id].longitude, position.latitude, position.longitude, (distance) => {
-            // console.log(distance);
-
             const timeDiff = timestamp - positions[id].timestamp;
             let kmh = (distance / timeDiff) * 3.6;
             // handling special cases of kmh
@@ -60,9 +74,9 @@ module.exports = {
             }
 
             // here insertion of point into the db
+            insertSpeedPoint(position.latitude, position.longitude, kmh, timestamp, 0);
 
             // console.log(`vehicle update. kmh: ${kmh} ,traveling ${distance} meters in ${timeDiff} seconds.`);
-
             positions[id] = position;
             positions[id].timestamp = timestamp;
           });

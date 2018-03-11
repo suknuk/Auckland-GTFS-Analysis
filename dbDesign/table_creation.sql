@@ -110,6 +110,7 @@ create table speed_data (
 	timestamp int, --NOT NULL
 	lat double precision, --NOT NULL
 	lon double precision, --NOT NULL
+	speed double precision, --NOT NULL
 	vehicle_type int, --NOT NULL
 	point_geo geometry(Point, 4326) --NOT NULL
 );
